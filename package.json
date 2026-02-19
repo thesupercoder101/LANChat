@@ -43,18 +43,8 @@
       "writeUpdateInfo": false
     },
 
-    "zip": {
-      "writeUpdateInfo": false
-    },
-
-    "publish": {
-      "provider": "generic",
-      "url": "https://example.com",
-      "useMultipleRangeRequest": false
-    },
-
+    "publish": null,
     "generateUpdatesFilesForAllChannels": false,
-    "electronUpdaterCompatibility": ">=0.0.0",
 
     "nsis": {
       "oneClick": false,
