@@ -24,11 +24,14 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install dependencies
+        run: npm ci
+
       # WINDOWS
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          curl -LO https://downloads.sourceforge.net/project/nsis/NSIS%203/3.10/nsis-3.10-setup.exe
+          curl -LO https://github.com/NSIS-Dev/NSIS/releases/download/v3.10/nsis-3.10-setup.exe
           Start-Process "nsis-3.10-setup.exe" -ArgumentList "/S" -Wait
 
       - name: Build Electron App (Windows)
