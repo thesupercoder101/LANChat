@@ -36,9 +36,6 @@
         "dmg",
         "zip"
       ],
-      "arch": [
-        "x64"
-      ],
       "icon": "build/icons/icon.icns"
     },
     "nsis": {
