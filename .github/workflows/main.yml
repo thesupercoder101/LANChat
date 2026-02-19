@@ -39,7 +39,10 @@ jobs:
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          curl -L -o nsis.exe https://github.com/NSIS-Dev/NSIS/releases/download/v3.10/nsis-3.10-setup.exe?raw=1
+          curl -L \
+            -H "Accept: application/octet-stream" \
+            -o nsis.exe \
+            https://api.github.com/repos/NSIS-Dev/NSIS/releases/assets/183436705
           Start-Process "nsis.exe" -ArgumentList "/S" -Wait
 
       - name: Build Electron App (Windows)
