@@ -32,11 +32,11 @@
       "icon": "build/icons/icon.ico"
     },
     "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
+      "target": ["dmg", "zip"],
       "icon": "build/icons/icon.icns"
+    },
+    "dmg": {
+      "writeUpdateInfo": false
     },
     "nsis": {
       "oneClick": false,
