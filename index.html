@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>LANChat</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #1e1e1e;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Custom Title Bar */
+#titlebar {
+    height: 32px;
+    background: #2b2b2b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    -webkit-app-region: drag;
+}
+
+#window-controls button {
+    background: transparent;
+    border: none;
+    color: white;
+    width: 40px;
+    height: 32px;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+}
+
+#window-controls button:hover {
+    background: #444;
+}
+
+/* Layout */
+#container {
+    display: flex;
+    flex: 1;
+}
+
+#sidebar {
+    width: 220px;
+    background: #252526;
+    padding: 20px;
+    border-right: 1px solid #333;
+}
+
+#sidebar input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: none;
+}
+
+#status {
+    margin-top: 15px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+#main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#chat {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    padding: 10px 14px;
+    border-radius: 14px;
+    max-width: 60%;
+}
+
+.self {
+    background: #0078d4;
+    align-self: flex-end;
+}
+
+.other {
+    background: #333;
+    align-self: flex-start;
+}
+
+#inputArea {
+    display: flex;
+    padding: 15px;
+    background: #2b2b2b;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+button.sendBtn {
+    margin-left: 10px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #0078d4;
+    color: white;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="titlebar">
+    <div>LANChat</div>
+    <div id="window-controls">
+        <button onclick="window.api.minimize()">—</button>
+        <button onclick="window.api.close()">✕</button>
+    </div>
+</div>
+
+<div id="container">
+    <div id="sidebar">
+        <h3>Profile</h3>
+        <input id="username" placeholder="Enter name..." />
+        <div id="status">Searching for server...</div>
+    </div>
+
+    <div id="main">
+        <div id="chat"></div>
+        <div id="inputArea">
+            <input id="messageInput" placeholder="Type message..." />
+            <button class="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const chat = document.getElementById("chat");
+const status = document.getElementById("status");
+const usernameInput = document.getElementById("username");
+let ws;
+
+async function connect() {
+    const serverIP = await window.api.discoverServer();
+
+    if (!serverIP) {
+        status.textContent = "No server found.";
+        return;
+    }
+
+    status.textContent = "Connected to " + serverIP;
+    ws = new WebSocket(`ws://${serverIP}:3000`);
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        const msg = document.createElement("div");
+        msg.classList.add("message");
+
+        if (data.user === usernameInput.value) {
+            msg.classList.add("self");
+        } else {
+            msg.classList.add("other");
+        }
+
+        msg.textContent = data.user + ": " + data.text;
+        chat.appendChild(msg);
+        chat.scrollTop = chat.scrollHeight;
+    };
+}
+
+function sendMessage() {
+    const text = document.getElementById("messageInput").value;
+    const user = usernameInput.value || "Guest";
+
+    if (!text.trim() || !ws) return;
+
+    ws.send(JSON.stringify({ user, text }));
+    document.getElementById("messageInput").value = "";
+}
+
+connect();
+</script>
+
+</body>
+</html>
