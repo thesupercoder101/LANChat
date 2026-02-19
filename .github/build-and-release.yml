@@ -10,9 +10,11 @@ on:
 jobs:
   build-and-release:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -22,13 +24,40 @@ jobs:
         with:
           node-version: 20
 
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Electron App
-        run: npm run build
+      # WINDOWS
+      - name: Install NSIS (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          curl -LO https://github.com/NSIS-Dev/NSIS/releases/download/v3.10/nsis-3.10-setup.exe
+          Start-Process "nsis-3.10-setup.exe" -ArgumentList "/S" -Wait
 
+      - name: Build Electron App (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npx electron-builder --win --publish never
+
+      # MACOS
+      - name: Install Xcode tools (macOS)
+        if: matrix.os == 'macos-latest'
+        run: xcode-select --install || true
+
+      - name: Build Electron App (macOS)
+        if: matrix.os == 'macos-latest'
+        run: npx electron-builder --mac dmg --publish never
+
+      # UPLOAD ONLY ON TAG
       - name: Upload Release Assets
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: |
