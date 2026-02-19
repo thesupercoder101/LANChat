@@ -19,9 +19,11 @@
   "build": {
     "appId": "com.thesupercoder101.lanchat",
     "productName": "LANChat",
+
     "directories": {
       "output": "dist"
     },
+
     "files": [
       "**/*",
       "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
