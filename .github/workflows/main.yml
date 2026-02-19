@@ -24,25 +24,27 @@ jobs:
         with:
           node-version: 20
 
-      # Windows: install NSIS without Chocolatey
+      # WINDOWS
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           curl -LO https://downloads.sourceforge.net/project/nsis/NSIS%203/3.10/nsis-3.10-setup.exe
-          start /wait nsis-3.10-setup.exe /S
+          Start-Process "nsis-3.10-setup.exe" -ArgumentList "/S" -Wait
 
-      # macOS: install Xcode tools (prevents timeout)
+      - name: Build Electron App (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npx electron-builder --win --publish never
+
+      # MACOS
       - name: Install Xcode tools (macOS)
         if: matrix.os == 'macos-latest'
         run: xcode-select --install || true
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Build Electron App (macOS)
+        if: matrix.os == 'macos-latest'
+        run: npx electron-builder --mac=x64 --publish never
 
-      - name: Build Electron App
-        run: npx electron-builder --publish never
-
-      # Upload only when building a release (tag)
+      # UPLOAD ONLY ON TAG
       - name: Upload Release Assets
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
