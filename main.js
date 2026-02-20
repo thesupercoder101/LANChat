@@ -1,70 +1,91 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const dgram = require('dgram');
+const { app, BrowserWindow } = require("electron");
+const path = require("path");
+const os = require("os");
+const net = require("net");
 
-// Start LAN WebSocket server
-require('./server.js');
+const { startServer } = require("./server.js");
+const { startDiscoveryResponder } = require("./discoveryServer.js");
 
-let mainWindow;
+const PORT = 3000;
 
-function createWindow() {
-    mainWindow = new BrowserWindow({
-        width: 900,
-        height: 600,
-        frame: false,            // Remove default Chrome frame
-        backgroundColor: "#1e1e1e",
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            contextIsolation: true
-        }
+// ---- LAN SCAN FOR EXISTING SERVER ----
+function checkServer(ip, port, timeout = 200) {
+    return new Promise((resolve) => {
+        const socket = new net.Socket();
+        socket.setTimeout(timeout);
+
+        socket.on("connect", () => {
+            socket.destroy();
+            resolve(true);
+        });
+
+        socket.on("timeout", () => {
+            socket.destroy();
+            resolve(false);
+        });
+
+        socket.on("error", () => {
+            resolve(false);
+        });
+
+        socket.connect(port, ip);
     });
-
-    mainWindow.loadFile('index.html');
 }
 
-app.whenReady().then(createWindow);
+async function findExistingServer() {
+    const interfaces = os.networkInterfaces();
+    const ips = [];
 
-// Handle window controls
-ipcMain.on("minimize", () => mainWindow.minimize());
-ipcMain.on("close", () => mainWindow.close());
-
-// Safe UDP discovery handler
-ipcMain.handle("discover-server", async () => {
-    return new Promise((resolve) => {
-        const client = dgram.createSocket('udp4');
-        let resolved = false;
-
-        function finish(result) {
-            if (!resolved) {
-                resolved = true;
-                try { client.close(); } catch (e) {}
-                resolve(result);
+    for (const name in interfaces) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === "IPv4" && !iface.internal) {
+                const base = iface.address.split(".").slice(0, 3).join(".");
+                for (let i = 1; i < 255; i++) {
+                    ips.push(`${base}.${i}`);
+                }
             }
         }
+    }
 
-        client.on('error', () => finish(null));
+    for (const ip of ips) {
+        const exists = await checkServer(ip, PORT);
+        if (exists) return ip;
+    }
 
-        client.on('message', (msg, rinfo) => {
-            if (msg.toString() === "LANCHAT_SERVER_HERE") {
-                finish(rinfo.address);
-            }
-        });
+    return null;
+}
 
-        client.bind(() => {
-            try {
-                client.setBroadcast(true);
-                client.send(
-                    Buffer.from("DISCOVER_LANCHAT_SERVER"),
-                    41234,
-                    "255.255.255.255"
-                );
-            } catch (e) {
-                finish(null);
-            }
-        });
-
-        setTimeout(() => {
-            finish(null);
-        }, 2000);
+// ---- ELECTRON WINDOW ----
+function createWindow(serverIP) {
+    const win = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            preload: path.join(__dirname, "preload.js"),
+            additionalArguments: [`--server-ip=${serverIP}`]
+        }
     });
+
+    win.loadFile("index.html");
+}
+
+// ---- MAIN STARTUP LOGIC ----
+async function startLANChat() {
+    const existing = await findExistingServer();
+
+    if (existing) {
+        console.log("Found LANChat server at:", existing);
+        createWindow(existing);
+    } else {
+        console.log("No server found — starting new server");
+        startServer(PORT);
+        startDiscoveryResponder(PORT);
+        createWindow("localhost");
+    }
+}
+
+app.whenReady().then(startLANChat);
+
+app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") app.quit();
 });
