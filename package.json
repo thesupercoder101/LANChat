@@ -35,13 +35,9 @@
     },
 
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": ["dir"],
       "singleArchFiles": true,
       "compression": "store"
-    },
-
-    "dmg": {
-      "writeUpdateInfo": false
     },
 
     "publish": null,
