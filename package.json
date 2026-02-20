@@ -29,14 +29,16 @@
     },
 
     "files": [
-      "**/*",
-      "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!**/*.map"
+      "main.js",
+      "package.json",
+      "renderer/**/*",
+      "assets/**/*",
+      "node_modules/**/*"
     ],
 
     "asar": true,
     "asarUnpack": [
-      "**/*.dll",
+      "node_modules/electron/dist/*.dll",
       "**/ffmpeg.dll"
     ],
 
@@ -56,9 +58,7 @@
 
     "mac": {
       "target": ["dir"],
-      "icon": "build/icons/icon.icns",
-      "singleArchFiles": true,
-      "compression": "store"
+      "icon": "build/icons/icon.icns"
     },
 
     "publish": null,
