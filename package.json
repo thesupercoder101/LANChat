@@ -38,7 +38,8 @@
     "mac": {
       "target": ["dmg", "zip"],
       "icon": "build/icons/icon.icns",
-      "singleArchFiles": true
+      "singleArchFiles": true,
+      "compression": "store"
     },
 
     "dmg": {
