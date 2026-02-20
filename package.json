@@ -47,6 +47,8 @@
 
     "publish": null,
     "generateUpdatesFilesForAllChannels": false,
+    "electronUpdaterCompatibility": ">=0.0.0",
+    "artifactName": "${productName}-${version}-${os}-${arch}",
 
     "nsis": {
       "oneClick": false,
