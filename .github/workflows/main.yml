@@ -4,6 +4,9 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: ${{ matrix.os }}
@@ -21,14 +24,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Cache Node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Install dependencies
         run: npm ci
 
@@ -37,16 +32,16 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: npx electron-builder --win --publish never
 
-      # MACOS BUILD (.app only)
-      - name: Install Xcode tools (macOS)
-        if: matrix.os == 'macos-latest'
-        run: xcode-select --install || true
-
+      # MACOS BUILD
       - name: Build Electron App (macOS)
         if: matrix.os == 'macos-latest'
         run: npx electron-builder --mac dir --x64 --publish never
 
-      # UPLOAD ASSETS TO RELEASE
+      # WAIT FOR RELEASE TO BE READY
+      - name: Wait for GitHub release to exist
+        run: sleep 10
+
+      # UPLOAD ASSETS
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
