@@ -16,7 +16,7 @@
   },
 
   "devDependencies": {
-    "electron": "^28.0.0",
+    "electron": "25.9.0",
     "electron-builder": "^24.13.3"
   },
 
@@ -29,24 +29,18 @@
     },
 
     "files": [
-      "main.js",
-      "package.json",
-      "renderer/**/*",
-      "assets/**/*",
-      "node_modules/**/*"
+      "**/*"
     ],
 
     "asar": true,
     "asarUnpack": [
-      "node_modules/electron/dist/*.dll",
-      "**/ffmpeg.dll"
+      "**/*.dll"
     ],
 
     "artifactName": "${productName}-${version}-${os}-${arch}",
 
     "win": {
-      "target": "nsis",
-      "icon": "build/icons/icon.ico"
+      "target": "nsis"
     },
 
     "nsis": {
@@ -57,12 +51,7 @@
     },
 
     "mac": {
-      "target": ["dir"],
-      "icon": "build/icons/icon.icns"
-    },
-
-    "publish": null,
-    "generateUpdatesFilesForAllChannels": false,
-    "electronUpdaterCompatibility": ">=0.0.0"
+      "target": ["dir"]
+    }
   }
 }
