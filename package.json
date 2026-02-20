@@ -23,33 +23,15 @@
   "build": {
     "appId": "com.thesupercoder101.lanchat",
     "productName": "LANChat",
-
     "directories": {
       "output": "dist"
     },
-
     "files": [
       "**/*"
     ],
-
-    "asar": true,
-    "asarUnpack": [
-      "**/*.dll"
-    ],
-
-    "artifactName": "${productName}-${version}-${os}-${arch}",
-
     "win": {
       "target": "nsis"
     },
-
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowElevation": true,
-      "allowToChangeInstallationDirectory": true
-    },
-
     "mac": {
       "target": ["dir"]
     }
